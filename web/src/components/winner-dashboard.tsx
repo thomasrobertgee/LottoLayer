@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,10 +7,19 @@ import { ethers, Contract } from "ethers";
 import { LOTTO_FACTORY_ADDRESS, RPC_URL, CHAIN_ID, BLOCK_EXPLORER_URL } from "@/lib/constants";
 import LottoFactoryABI from "@/lib/abis/LottoFactory.json";
 import RaffleABI from "@/lib/abis/Raffle.json";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Trophy, ExternalLink, Copy, CheckCircle } from "lucide-react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Gift, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 interface WinnerData {
     raffleAddress: string;
@@ -18,9 +28,10 @@ interface WinnerData {
     symbol: string;
     timestamp: number;
     txHash: string;
+    ticketsSold: number;
 }
 
-export function WinnerDashboard() {
+export function WinnerHistoryTable() {
     const { provider } = useWeb3();
     const [winners, setWinners] = useState<WinnerData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,75 +39,71 @@ export function WinnerDashboard() {
     useEffect(() => {
         const fetchWinners = async () => {
             if (!LOTTO_FACTORY_ADDRESS) return;
-            // Don't set loading on poll, only initial
             if (winners.length === 0) setLoading(true);
 
             try {
-                // Determine which provider to use for reading
                 const readProvider = (provider && (await provider.getNetwork()).chainId === BigInt(CHAIN_ID))
                     ? provider
                     : new ethers.JsonRpcProvider(RPC_URL);
 
                 const factory = new Contract(ethers.getAddress(LOTTO_FACTORY_ADDRESS), LottoFactoryABI.abi, readProvider);
-                const raffleAddresses = await factory.getRaffles();
+                const filter = factory.filters.WinnerPicked();
+                const events = await factory.queryFilter(filter, -50000);
 
+                if (events.length === 0) {
+                    setWinners([]);
+                    setLoading(false);
+                    return;
+                }
 
-                const winnerPromises = raffleAddresses.map(async (address: string) => {
-                    const raffle = new Contract(address, RaffleABI.abi, readProvider);
-                    const recentWinner = await raffle.getRecentWinner();
+                // Newest first
+                const sortedEvents = events.reverse().slice(0, 10);
 
+                const winnerPromises = sortedEvents.map(async (event: any) => {
+                    const { raffle, winner, amount } = event.args;
+                    let blockTimestamp = Date.now() / 1000;
 
-                    if (recentWinner === ethers.ZeroAddress) return null;
+                    try {
+                        const block = await event.getBlock();
+                        if (block) blockTimestamp = block.timestamp;
+                    } catch (e) { console.warn("Block fetch failed", e); }
 
-                    // Get Reward details
-                    const rewardToken = await raffle.getRewardToken();
-                    let symbol = "ETH";
-                    let decimals = 18;
-
-                    if (rewardToken !== ethers.ZeroAddress) {
-                        try {
-                            const tokenContract = new Contract(rewardToken, ["function symbol() view returns (string)", "function decimals() view returns (uint8)"], readProvider);
-                            const [sym, dec] = await Promise.all([tokenContract.symbol(), tokenContract.decimals()]);
-                            symbol = sym;
-                            decimals = dec;
-                        } catch (e) {
-                            symbol = "Token";
-                        }
+                    // Fetch tickets sold (total players)
+                    let ticketsSold = 0;
+                    try {
+                        const r = new Contract(raffle, RaffleABI.abi, readProvider);
+                        // getNumPlayers might be reset to 0? 
+                        // Wait, fulfillRandomWords resets players to 0. 
+                        // So we can't get it from contract state after the fact.
+                        // But we can get it from the `RaffleEnter` logs?
+                        // Or just Assume MAX tickets if it triggered? 
+                        // Or `balance / price`?
+                        // We have `amount` (winners pot).
+                        // WinnersPot = 95% of Total.
+                        // Total = Amount / 0.95.
+                        // Tickets = Total / Price.
+                        // Let's fetch Entrance Fee.
+                        const fee = await r.getEntranceFee();
+                        const pot = BigInt(amount);
+                        const totalCollected = (pot * 100n) / 95n;
+                        ticketsSold = Number(totalCollected / fee);
+                    } catch (e) {
+                        // Fallback
                     }
 
-                    // Get Amount from events
-                    const filter = raffle.filters.WinnerPicked();
-                    // Look back 50k blocks approx
-                    const events = await raffle.queryFilter(filter, -50000);
-
-                    if (events.length === 0) return null;
-
-                    // We only take the last one here as per logic that each raffle has 1 winner.
-                    // If we wanted all events from a single contract, we'd map events.
-                    // But assume 1 raffle = 1 draw.
-                    const lastEvent = events[events.length - 1] as any;
-                    const amount = lastEvent.args ? lastEvent.args[1] : BigInt(0);
-
-                    // Block data for timestamp
-                    const block = await readProvider.getBlock(lastEvent.blockNumber);
-
                     return {
-                        raffleAddress: address,
-                        winner: recentWinner,
-                        amount: ethers.formatUnits(amount, decimals),
-                        symbol: symbol,
-                        timestamp: block ? block.timestamp : Date.now() / 1000,
-                        txHash: lastEvent.transactionHash
+                        raffleAddress: raffle,
+                        winner: winner,
+                        amount: ethers.formatEther(amount),
+                        symbol: "ETH",
+                        timestamp: blockTimestamp,
+                        txHash: event.transactionHash,
+                        ticketsSold: ticketsSold
                     };
                 });
 
                 const results = await Promise.all(winnerPromises);
-                const validWinners = results.filter((w): w is WinnerData => w !== null);
-
-                // Sort by timestamp desc
-                validWinners.sort((a, b) => b.timestamp - a.timestamp);
-
-                setWinners(validWinners);
+                setWinners(results);
 
             } catch (error) {
                 console.error("Failed to fetch winners", error);
@@ -106,132 +113,116 @@ export function WinnerDashboard() {
         };
 
         fetchWinners();
-        const interval = setInterval(fetchWinners, 10000); // Poll every 10s for live sync
-
+        const interval = setInterval(fetchWinners, 15000);
         return () => clearInterval(interval);
     }, [provider]);
 
-    if (loading && winners.length === 0) return <div className="text-center py-8 opacity-50">Loading Winners...</div>;
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success("Copied to clipboard");
+    };
+
+    if (loading && winners.length === 0) return <div className="text-center py-8 opacity-50 font-mono">Syncing Registry...</div>;
+
     if (winners.length === 0) {
         return (
-            <div className="mt-16 text-center space-y-4 py-12 bg-muted/5 rounded-xl border border-dashed border-primary/20">
-                <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-                <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-muted-foreground">No winners yet</h3>
-                    <p className="text-muted-foreground/80">
-                        First draw happening soon! Join a raffle to be our first winner.
-                    </p>
-                </div>
+            <div className="text-center py-12 bg-muted/5 rounded-xl border border-dashed border-primary/20 mt-16">
+                <Trophy className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No recent winners found.</p>
             </div>
         );
     }
 
-
     return (
-        <div className="mt-16 space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent flex items-center justify-center gap-2">
-                <Trophy className="text-yellow-500 w-6 h-6" /> Recent Winners
-            </h2>
-            <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2">
-                {winners.map((win, idx) => (
-                    <WinnerCard key={`${win.raffleAddress}-${idx}`} data={win} index={idx} />
-                ))}
+        <div className="mt-16 space-y-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent flex items-center gap-2">
+                    <Trophy className="text-yellow-500 w-5 h-5" /> Recent Winners
+                </h2>
+                <Badge variant="outline" className="font-mono text-xs">Verified On-Chain</Badge>
+            </div>
+
+            <div className="rounded-md border bg-card/50 backdrop-blur-sm overflow-hidden">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent border-b border-primary/10">
+                            <TableHead className="w-[180px]">Date</TableHead>
+                            <TableHead>Raffle ID</TableHead>
+                            <TableHead>Winner</TableHead>
+                            <TableHead className="text-right">Prize (ETH)</TableHead>
+                            <TableHead className="text-center">Tickets</TableHead>
+                            <TableHead className="text-center">Status</TableHead>
+                            <TableHead className="text-right">Proof</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {winners.map((row, idx) => (
+                            <TableRow key={`${row.raffleAddress}-${idx}`} className="hover:bg-muted/50 transition-colors border-b border-primary/5">
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {new Date(row.timestamp * 1000).toLocaleString('en-GB', {
+                                        day: '2-digit', month: '2-digit', year: '2-digit',
+                                        hour: '2-digit', minute: '2-digit'
+                                    })}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-xs text-blue-400">
+                                            {row.raffleAddress.slice(0, 6)}...{row.raffleAddress.slice(-4)}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-4 w-4 text-muted-foreground/50 hover:text-white"
+                                            onClick={() => copyToClipboard(row.raffleAddress)}
+                                        >
+                                            <Copy className="w-3 h-3" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50" />
+                                        <span className="font-mono text-xs font-medium">
+                                            {row.winner.slice(0, 6)}...{row.winner.slice(-4)}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right font-bold text-yellow-500">
+                                    {parseFloat(row.amount).toFixed(4)}
+                                </TableCell>
+                                <TableCell className="text-center text-xs text-muted-foreground">
+                                    {row.ticketsSold}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20 text-[10px] uppercase font-bold tracking-wider">
+                                        Paid
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <a
+                                                    href={`${BLOCK_EXPLORER_URL}/tx/${row.txHash}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-white/10 transition-colors text-blue-400"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </a>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>View Transaction</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );
 }
 
-function WinnerCard({ data, index }: { data: WinnerData, index: number }) {
-    const [revealed, setRevealed] = useState(false);
-
-    let badge = null;
-    if (index === 0) badge = <span className="absolute top-2 right-2 bg-yellow-500 text-black font-bold text-xs px-2 py-1 rounded-full shadow-lg border border-yellow-300 z-20">1st Place 🥇</span>;
-    if (index === 1) badge = <span className="absolute top-2 right-2 bg-gray-300 text-black font-bold text-xs px-2 py-1 rounded-full shadow-lg border border-gray-100 z-20">2nd Place 🥈</span>;
-    if (index === 2) badge = <span className="absolute top-2 right-2 bg-orange-700 text-white font-bold text-xs px-2 py-1 rounded-full shadow-lg border border-orange-500 z-20">3rd Place 🥉</span>;
-
-    return (
-        <Card className="bg-gradient-to-br from-black/40 to-black/20 border-yellow-500/20 overflow-hidden relative group">
-            <div className="absolute inset-0 bg-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            {badge}
-
-
-            <CardContent className="p-6 text-center space-y-4 relative z-10 min-h-[200px] flex flex-col justify-center items-center">
-                <CardTitle className="text-sm font-light text-muted-foreground uppercase tracking-widest mb-2">
-                    Raffle {data.raffleAddress.slice(0, 6)}...
-                </CardTitle>
-
-                <AnimatePresence mode="wait">
-                    {!revealed ? (
-                        <motion.div
-                            key="hidden"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <Gift className="w-16 h-16 text-yellow-500/50 mx-auto mb-4 animate-bounce" />
-                            <Button
-                                onClick={() => setRevealed(true)}
-                                variant="outline"
-                                className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 font-bold tracking-wide"
-                            >
-                                Reveal Winner
-                            </Button>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="revealed"
-                            initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{ type: "spring", bounce: 0.4 }}
-                            className="space-y-4"
-                        >
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 mx-auto flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-                                <Trophy className="w-8 h-8 text-black" />
-                            </div>
-
-                            <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white tracking-tight">
-                                    {parseFloat(data.amount).toFixed(4)} {data.symbol}
-                                </p>
-                                <p className="text-xs font-mono text-yellow-500/80 bg-yellow-500/10 px-2 py-1 rounded-full">
-                                    {data.winner.slice(0, 6)}...{data.winner.slice(-4)}
-                                </p>
-                            </div>
-
-                            <p className="text-[10px] text-muted-foreground mb-2">
-                                Won {getTimeAgo(data.timestamp)}
-                            </p>
-
-                            <a
-                                href={`${BLOCK_EXPLORER_URL}/tx/${data.txHash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-[10px] text-yellow-500 hover:text-yellow-400 hover:underline"
-                            >
-                                View Ticket <ExternalLink className="w-3 h-3 ml-1" />
-                            </a>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </CardContent>
-        </Card>
-    );
-}
-
-function getTimeAgo(timestamp: number) {
-    const seconds = Math.floor(Date.now() / 1000 - timestamp);
-    const intervals = [
-        { label: 'year', seconds: 31536000 },
-        { label: 'month', seconds: 2592000 },
-        { label: 'day', seconds: 86400 },
-        { label: 'hour', seconds: 3600 },
-        { label: 'minute', seconds: 60 }
-    ];
-
-    for (const i of intervals) {
-        const count = Math.floor(seconds / i.seconds);
-        if (count >= 1) return `${count} ${i.label}${count !== 1 ? 's' : ''} ago`;
-    }
-    return 'just now';
-}

@@ -7,7 +7,7 @@ async function main() {
     let vrfCoordinatorAddress;
     let subscriptionId;
     let gasLane;
-    let callbackGasLimit = 500000;
+    const CALLBACK_GAS_LIMIT = 2500000; // Increased to 2.5M to support Raffle Factory spawning
 
     if (network.name === "hardhat" || network.name === "localhost") {
         console.log("Local network detected. Deploying Mock VRF...");
@@ -52,7 +52,7 @@ async function main() {
         vrfCoordinatorAddress,
         gasLane,
         subscriptionId,
-        callbackGasLimit
+        CALLBACK_GAS_LIMIT
     );
 
     await lottoFactory.waitForDeployment();

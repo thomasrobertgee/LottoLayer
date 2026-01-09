@@ -27,6 +27,8 @@ export interface ILottoFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "onRaffleEnded",
     values: [
+      AddressLike,
+      BigNumberish,
       BigNumberish,
       BigNumberish,
       BigNumberish,
@@ -86,6 +88,8 @@ export interface ILottoFactory extends BaseContract {
 
   onRaffleEnded: TypedContractMethod<
     [
+      winner: AddressLike,
+      amount: BigNumberish,
       ticketPrice: BigNumberish,
       maxTickets: BigNumberish,
       duration: BigNumberish,
@@ -104,6 +108,8 @@ export interface ILottoFactory extends BaseContract {
     nameOrSignature: "onRaffleEnded"
   ): TypedContractMethod<
     [
+      winner: AddressLike,
+      amount: BigNumberish,
       ticketPrice: BigNumberish,
       maxTickets: BigNumberish,
       duration: BigNumberish,

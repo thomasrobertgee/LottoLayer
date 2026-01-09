@@ -30,6 +30,7 @@ export interface RaffleInterface extends Interface {
       | "buyTicket"
       | "buyTicketFor"
       | "checkUpkeep"
+      | "emergencyDraw"
       | "getEntranceFee"
       | "getInterval"
       | "getLastTimeStamp"
@@ -70,6 +71,10 @@ export interface RaffleInterface extends Interface {
   encodeFunctionData(
     functionFragment: "checkUpkeep",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "emergencyDraw",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getEntranceFee",
@@ -144,6 +149,10 @@ export interface RaffleInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "checkUpkeep",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "emergencyDraw",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -337,6 +346,8 @@ export interface Raffle extends BaseContract {
     "view"
   >;
 
+  emergencyDraw: TypedContractMethod<[], [void], "nonpayable">;
+
   getEntranceFee: TypedContractMethod<[], [bigint], "view">;
 
   getInterval: TypedContractMethod<[], [bigint], "view">;
@@ -401,6 +412,9 @@ export interface Raffle extends BaseContract {
     [[boolean, string] & { upkeepNeeded: boolean }],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "emergencyDraw"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "getEntranceFee"
   ): TypedContractMethod<[], [bigint], "view">;

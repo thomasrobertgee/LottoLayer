@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 async function main() {
     const linkAddress = "0xE4aB69C077896252FAFBD49EFD26B5D171A32410";
     const vrfCoordinatorAddress = "0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE";
-    const newFactoryAddress = "0x92a961014719F63E052EF5B44EeF8187A39141B0";
+    const newFactoryAddress = "0xd8F8d72E12Ef88b472f225efeCC49812e75b0c09";
 
     // Amount to fund: 1 LINK
     const fundAmount = ethers.parseEther("1.0");
@@ -81,8 +81,8 @@ async function main() {
     // createRaffle(price, max, duration, rewardToken)
     // Use Native Reward (address(0))
     const raffleTx = await LottoFactory.createRaffle(
-        ethers.parseEther("0.001"),
-        10,
+        ethers.parseEther("0.00005"), // Micro-Fee
+        5, // Micro-Cap
         300,
         ethers.ZeroAddress,
         1

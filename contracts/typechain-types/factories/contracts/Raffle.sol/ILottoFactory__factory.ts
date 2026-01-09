@@ -12,6 +12,16 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "winner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
         internalType: "uint256",
         name: "ticketPrice",
         type: "uint256",

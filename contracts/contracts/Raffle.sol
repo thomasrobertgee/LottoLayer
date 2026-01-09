@@ -11,6 +11,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 interface ILottoFactory {
     function onRaffleEnded(
+        address winner,
+        uint256 amount,
         uint256 ticketPrice,
         uint256 maxTickets,
         uint256 duration,
@@ -32,7 +34,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
     /** Type declarations */
     enum RaffleState {
         OPEN,
-        CALCULATING
+        CALCULATING,
+        CLOSED
     }
 
     /** State Variables */
@@ -216,13 +219,6 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         address[] memory winners = new address[](count);
         uint256[] memory payouts = new uint256[](count);
         
-        // Shuffle/Selection Logic
-        // Note: Simple modulo selection. To pick N distinct winners from M players without duplicates is harder.
-        // For simplicity with large pools, we can assume low collision or allow duplicates if tickets = entries?
-        // Usually, 1 ticket = 1 chance. A user with 2 tickets can win twice? Yes.
-        // If we want distinct *individuals*, we need mapping. 
-        // Assuming "Tickets" logic: Each ticket is a chance. Winning twice is allowed if you hold multiple tickets.
-        
         // Distribution Logic
         if (count == 1) {
              // 95% to single winner
@@ -231,22 +227,10 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
              payouts[0] = winnersPot;
         } else if (count == 3 && i_numWinners == 3) {
              // 60/30/5 Split
-             // We need 3 random words? Or derive from 1?
-             // VRF V2.5 requested `i_numWinners` words. So randomWords array has `count` items.
-             
-             // 1st Place (60% of Total Pot = ~63% of WinnersPot?)
-             // Request: 60/30/5 of TOTAL pot. 
-             // 60% Total
-             // 30% Total
-             // 5% Total
-             // 5% House
-             // Sum = 100%. Correct.
-             
              payouts[0] = (totalBalance * 60) / 100;
              payouts[1] = (totalBalance * 30) / 100;
              payouts[2] = (totalBalance * 5) / 100;
              
-             // Indexes
              winners[0] = s_players[randomWords[0] % s_players.length];
              winners[1] = s_players[randomWords[1] % s_players.length];
              winners[2] = s_players[randomWords[2] % s_players.length];
@@ -255,13 +239,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
              uint256 share = winnersPot / count;
              for (uint256 i = 0; i < count; i++) {
                  payouts[i] = share;
-                 // Use i-th random word
-                 // Fail-safe if randomWords provided < count?
-                 // requestRandomWords requested i_numWinners, so randomWords should have length == i_numWinners
                  if(i < randomWords.length) {
                      winners[i] = s_players[randomWords[i] % s_players.length];
                  } else {
-                     // Fallback if randomness insufficient (shouldn't happen)
                      winners[i] = s_players[(randomWords[0] + i) % s_players.length];
                  }
              }
@@ -270,11 +250,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         // Reset State
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
-        s_raffleState = RaffleState.OPEN;
-        delete s_recentWinners; // clear old history? Or we store them?
-        // We can just emit events. 
-        
-        // Effects & Interactions
+        s_raffleState = RaffleState.CLOSED;
+        delete s_recentWinners; 
         
         // Pay House
         if (i_rewardToken == address(0)) {
@@ -293,26 +270,51 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         }
         
         emit WinnersPicked(winners, payouts);
-        // Backwards compatibility event for single winner (1st place)
         if (count > 0) {
             s_recentWinner = winners[0];
             emit WinnerPicked(winners[0], payouts[0]);
         }
-
         
-        // Trigger Factory to create replacement raffle (Automatic Loop)
-        // We only trigger if this is an "endless" or "auto-replacing" system. 
-        // Based on prompt, assume ALWAYS.
-        // We must successfully call factory. If it fails, we don't revert the payout, so wrap in try/catch or ignore failure?
-        // Actually prompt says "Modify... so that... Factory automatically calls createRaffle".
-        // It's safest to require it succeeds if that's the core logic.
         ILottoFactory(i_factory).onRaffleEnded(
+            winners[0],
+            payouts[0],
             i_entranceFee,
             i_maxTickets,
             i_interval,
             i_rewardToken,
             i_numWinners
         );
+    }
+
+    /**
+     * @dev Emergency function to conclude the raffle if VRF fails.
+     * Only callable by the owner (House).
+     * Uses block.timestamp and other values for pseudo-randomness.
+     */
+    function emergencyDraw() external {
+        if (msg.sender != owner() && msg.sender != s_treasuryAddress) {
+             revert("Only Owner or Treasury can call this");
+        }
+        if (s_raffleState != RaffleState.CALCULATING) {
+             revert("Raffle not in CALCULATING state");
+        }
+        
+        uint256[] memory randomWords = new uint256[](i_numWinners);
+        for (uint256 i = 0; i < i_numWinners; i++) {
+            randomWords[i] = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.prevrandao,
+                        msg.sender,
+                        i,
+                        s_players.length
+                    )
+                )
+            );
+        }
+
+        fulfillRandomWords(0, randomWords);
     }
 
     /** Getter Functions */

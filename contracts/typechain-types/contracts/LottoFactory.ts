@@ -48,7 +48,10 @@ export interface LottoFactoryInterface extends Interface {
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "OwnershipTransferred" | "RaffleCreated"
+    nameOrSignatureOrTopic:
+      | "OwnershipTransferred"
+      | "RaffleCreated"
+      | "WinnerPicked"
   ): EventFragment;
 
   encodeFunctionData(
@@ -97,6 +100,8 @@ export interface LottoFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "onRaffleEnded",
     values: [
+      AddressLike,
+      BigNumberish,
       BigNumberish,
       BigNumberish,
       BigNumberish,
@@ -222,6 +227,24 @@ export namespace RaffleCreatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace WinnerPickedEvent {
+  export type InputTuple = [
+    raffle: AddressLike,
+    winner: AddressLike,
+    amount: BigNumberish
+  ];
+  export type OutputTuple = [raffle: string, winner: string, amount: bigint];
+  export interface OutputObject {
+    raffle: string;
+    winner: string;
+    amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export interface LottoFactory extends BaseContract {
   connect(runner?: ContractRunner | null): LottoFactory;
   waitForDeployment(): Promise<this>;
@@ -309,6 +332,8 @@ export interface LottoFactory extends BaseContract {
 
   onRaffleEnded: TypedContractMethod<
     [
+      winner: AddressLike,
+      amount: BigNumberish,
       ticketPrice: BigNumberish,
       maxTickets: BigNumberish,
       duration: BigNumberish,
@@ -403,6 +428,8 @@ export interface LottoFactory extends BaseContract {
     nameOrSignature: "onRaffleEnded"
   ): TypedContractMethod<
     [
+      winner: AddressLike,
+      amount: BigNumberish,
       ticketPrice: BigNumberish,
       maxTickets: BigNumberish,
       duration: BigNumberish,
@@ -451,6 +478,13 @@ export interface LottoFactory extends BaseContract {
     RaffleCreatedEvent.OutputTuple,
     RaffleCreatedEvent.OutputObject
   >;
+  getEvent(
+    key: "WinnerPicked"
+  ): TypedContractEvent<
+    WinnerPickedEvent.InputTuple,
+    WinnerPickedEvent.OutputTuple,
+    WinnerPickedEvent.OutputObject
+  >;
 
   filters: {
     "OwnershipTransferred(address,address)": TypedContractEvent<
@@ -473,6 +507,17 @@ export interface LottoFactory extends BaseContract {
       RaffleCreatedEvent.InputTuple,
       RaffleCreatedEvent.OutputTuple,
       RaffleCreatedEvent.OutputObject
+    >;
+
+    "WinnerPicked(address,address,uint256)": TypedContractEvent<
+      WinnerPickedEvent.InputTuple,
+      WinnerPickedEvent.OutputTuple,
+      WinnerPickedEvent.OutputObject
+    >;
+    WinnerPicked: TypedContractEvent<
+      WinnerPickedEvent.InputTuple,
+      WinnerPickedEvent.OutputTuple,
+      WinnerPickedEvent.OutputObject
     >;
   };
 }

@@ -17,7 +17,7 @@ import { CHAIN_ID } from "@/lib/constants";
 
 
 import { RaffleList } from "@/components/raffle-list";
-import { WinnerDashboard } from "@/components/winner-dashboard";
+import { WinnerHistoryTable } from "@/components/winner-dashboard";
 
 
 export default function Home() {
@@ -109,7 +109,7 @@ export default function Home() {
             </div>
 
             <RaffleList />
-            <WinnerDashboard />
+            <WinnerHistoryTable />
           </div>
         </section>
 

@@ -19,7 +19,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 
 interface RaffleData {
-
     id: string; // Address as ID
     entranceFee: string;
     prize: string;
@@ -29,6 +28,7 @@ interface RaffleData {
     maxTickets: number;
     numWinners: number;
     rawEntranceFee: bigint;
+    owner: string;
 }
 
 
@@ -38,6 +38,15 @@ export function RaffleList() {
     const [prices, setPrices] = useState({ eth: 0, btc: 0 });
     const [raffles, setRaffles] = useState<RaffleData[]>([]);
     const [loading, setLoading] = useState(false);
+    const [account, setAccount] = useState<string>("");
+
+    useEffect(() => {
+        if (signer) {
+            signer.getAddress().then(setAccount);
+        } else {
+            setAccount("");
+        }
+    }, [signer]);
 
 
     const fetchPrices = async () => {
@@ -131,13 +140,14 @@ export function RaffleList() {
 
                 // Fetch basic info
 
-                const [entranceFee, state, maxTicketsValue, balance, numPlayers, numWinners] = await Promise.all([
+                const [entranceFee, state, maxTicketsValue, balance, numPlayers, numWinners, owner] = await Promise.all([
                     raffle.getEntranceFee(),
                     raffle.getRaffleState(),
                     raffle.getMaxTickets(), // Added getMaxTickets call
                     readProvider.getBalance(address), // Actual Balance
                     raffle.getNumPlayers(),
-                    raffle.getNumWinners()
+                    raffle.getNumWinners(),
+                    raffle.owner()
                 ]);
 
 
@@ -178,7 +188,8 @@ export function RaffleList() {
                     participants: Number(numPlayers),
                     maxTickets: maxTickets,
                     numWinners: Number(numWinners),
-                    endsIn: endsInStr
+                    endsIn: endsInStr,
+                    owner: owner
                 };
             });
 
@@ -359,6 +370,23 @@ export function RaffleList() {
         }
     };
 
+    const handleEmergencyDraw = async (raffleAddress: string) => {
+        if (!signer) return;
+        try {
+            const raffle = new Contract(raffleAddress, RaffleABI.abi, signer);
+            console.log("Triggering Emergency Draw for " + raffleAddress);
+
+            const tx = await raffle.emergencyDraw({ gasLimit: 500000 });
+            toast.loading("Executing Emergency Draw...", { id: "emergency" });
+            await tx.wait();
+            toast.success("Emergency Draw Completed! Refreshing...", { id: "emergency" });
+            fetchRaffles();
+        } catch (e: any) {
+            console.error(e);
+            toast.error("Failed: " + (e.reason || e.message), { id: "emergency" });
+        }
+    };
+
     const handleArchive = (raffleAddress: string) => {
         const hidden = JSON.parse(localStorage.getItem("hiddenRaffles") || "[]");
         if (!hidden.includes(raffleAddress)) {
@@ -391,7 +419,9 @@ export function RaffleList() {
                     onBuy={handleBuyTicket}
                     onZap={handleZapBuy}
                     onManualDraw={handleManualDraw}
+                    onEmergencyDraw={handleEmergencyDraw}
                     onArchive={handleArchive}
+                    userAddress={account}
                 />
             ))}
         </div>
@@ -460,19 +490,30 @@ function RaffleCard({
     onBuy,
     onZap,
     onManualDraw,
-    onArchive
+    onEmergencyDraw,
+    onArchive,
+    userAddress
 }: {
     raffle: RaffleData,
     prices: { eth: number, btc: number },
     onBuy: (id: string, price: bigint) => Promise<void>,
     onZap: (id: string, ethCost: string) => Promise<void>,
     onManualDraw: (id: string) => void,
-    onArchive: (id: string) => void
+    onEmergencyDraw: (id: string) => void,
+    onArchive: (id: string) => void,
+    userAddress: string
 }) {
     const [selectedAsset, setSelectedAsset] = useState<"ETH" | "USDC">("ETH");
     const [showInspector, setShowInspector] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const { provider } = useWeb3();
+
+    // Check ownership or Admin privileges
+    const ADMIN_ADDRESS = "0xDE2563fcD41a1394a2677F260906FA06fcd88342".toLowerCase();
+    const isOwner = userAddress && (
+        (raffle.owner && userAddress.toLowerCase() === raffle.owner.toLowerCase()) ||
+        userAddress.toLowerCase() === ADMIN_ADDRESS
+    );
 
     // Calculate quote
     const ethCost = parseFloat(raffle.entranceFee);
@@ -662,7 +703,21 @@ function RaffleCard({
                     </Button>
                 </div>
 
-                {/* Emergency Manual Draw Button */}
+                {/* BUTTONS */}
+                {/* Emergency Manual Draw Button: Only if Owner AND Calculating */}
+                {isOwner && isCalculating && (
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full mt-2 animate-in fade-in slide-in-from-top-1 bg-red-600 hover:bg-red-700"
+                        onClick={() => onEmergencyDraw(raffle.id)}
+                    >
+                        <Timer className="w-4 h-4 mr-2" />
+                        Admin: Emergency Draw
+                    </Button>
+                )}
+
+                {/* Standard Manual Draw Button */}
                 {showManualDraw && (
                     <Button
                         variant="destructive"

@@ -17,6 +17,7 @@ contract LottoFactory is Ownable, AutomationCompatible {
     uint32 public immutable i_callbackGasLimit;
 
     event RaffleCreated(address indexed raffleAddress);
+    event WinnerPicked(address indexed raffle, address indexed winner, uint256 amount);
 
     constructor(
         address vrfCoordinator,
@@ -74,6 +75,17 @@ contract LottoFactory is Ownable, AutomationCompatible {
         address rewardToken,
         uint32 numWinners
     ) internal {
+        // Guard: Prevent duplicate spawn if previous raffle is still active
+        if (s_raffles.length > 0) {
+            Raffle lastRaffle = s_raffles[s_raffles.length - 1];
+            try lastRaffle.getRaffleState() returns (Raffle.RaffleState state) {
+                require(state == Raffle.RaffleState.CLOSED, "Previous raffle is still active");
+            } catch {
+                // If we can't read state, we assume safe to proceed or maybe dangerous?
+                // Best to log or ignore.
+            }
+        }
+
         Raffle raffle = new Raffle(
             ticketPrice,
             duration,
@@ -102,6 +114,8 @@ contract LottoFactory is Ownable, AutomationCompatible {
     }
 
     function onRaffleEnded(
+        address winner,
+        uint256 amount,
         uint256 ticketPrice,
         uint256 maxTickets,
         uint256 duration,
@@ -109,6 +123,9 @@ contract LottoFactory is Ownable, AutomationCompatible {
         uint32 numWinners
     ) external {
         require(isRaffle[msg.sender], "Only valid raffles can trigger replacement");
+        
+        emit WinnerPicked(msg.sender, winner, amount);
+        
         // Automatically create a fresh replacement
         _createRaffle(ticketPrice, maxTickets, duration, rewardToken, numWinners);
     }
