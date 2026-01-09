@@ -1,0 +1,281 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "VRFCoordinatorV2_5Mock",
+  "sourceName": "contracts/mocks/VRFCoordinatorV2_5Mock.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint96",
+          "name": "_baseFee",
+          "type": "uint96"
+        },
+        {
+          "internalType": "uint96",
+          "name": "_gasPriceLink",
+          "type": "uint96"
+        },
+        {
+          "internalType": "int256",
+          "name": "_weiPerUnitLink",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "outputSeed",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint96",
+          "name": "payment",
+          "type": "uint96"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "name": "RandomWordsFulfilled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "keyHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "preSeed",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "subId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "minimumRequestConfirmations",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "callbackGasLimit",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "numWords",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "extraArgs",
+          "type": "bytes"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RandomWordsRequested",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "BASE_FEE",
+      "outputs": [
+        {
+          "internalType": "uint96",
+          "name": "",
+          "type": "uint96"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GAS_PRICE_LINK",
+      "outputs": [
+        {
+          "internalType": "uint96",
+          "name": "",
+          "type": "uint96"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "WEI_PER_UNIT_LINK",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "subId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "consumer",
+          "type": "address"
+        }
+      ],
+      "name": "addConsumer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "createSubscription",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "subId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "consumer",
+          "type": "address"
+        }
+      ],
+      "name": "fulfillRandomWords",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "subId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint96",
+          "name": "amount",
+          "type": "uint96"
+        }
+      ],
+      "name": "fundSubscription",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "keyHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "subId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "requestConfirmations",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint32",
+              "name": "callbackGasLimit",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "numWords",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "extraArgs",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct VRFV2PlusClient.RandomWordsRequest",
+          "name": "req",
+          "type": "tuple"
+        }
+      ],
+      "name": "requestRandomWords",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161064e38038061064e83398101604081905261002f91610053565b50505061008f565b80516001600160601b038116811461004e57600080fd5b919050565b60008060006060848603121561006857600080fd5b61007184610037565b925061007f60208501610037565b9150604084015190509250925092565b6105b08061009e6000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80639b1c385e1161005b5780639b1c385e146100fc578063a21a23e41461010f578063a410347f14610116578063bec4c08c1461012157600080fd5b80633d18651e1461008d5780634cf94d87146100b9578063625e02e3146100cd578063808974ff146100e9575b600080fd5b61009c67016345785d8a000081565b6040516001600160601b0390911681526020015b60405180910390f35b6100cb6100c7366004610343565b5050565b005b6100db660e35fa931a000081565b6040519081526020016100b0565b6100cb6100f736600461037f565b61012f565b6100db61010a3660046103b0565b61027d565b60016100db565b61009c633b9aca0081565b6100cb6100c736600461037f565b60408051600180825281830190925260009160208083019080368337019050509050824260405160200161016d929190918252602082015260400190565b6040516020818303038152906040528051906020012060001c81600081518110610199576101996103f2565b6020908102919091010152604051631fe543e360e01b81526001600160a01b03831690631fe543e3906101d29086908590600401610408565b600060405180830381600087803b1580156101ec57600080fd5b505af1158015610200573d6000803e3d6000fd5b50505050827f7dffc5ae5ee4e2e4df1651cf6ad329a73cebdb728f37ea0187b9b17e036756e482600081518110610239576102396103f2565b602002602001015160006001604051610270939291909283526001600160601b039190911660208301521515604082015260600190565b60405180910390a2505050565b60008054818061028c83610458565b9091555060008181526001602090815260409182902080546001600160a01b03191633908117909155929350840135908435907feb0e3652e0f44f417695e6e90f2f42c99b65cd7169074c5a654b16b9748c3a4e9085906064906102f69060608a01908a0161047f565b61030660808a0160608b016104a3565b61031660a08b0160808c016104a3565b61032360a08c018c6104c9565b6040516103369796959493929190610517565b60405180910390a4919050565b6000806040838503121561035657600080fd5b8235915060208301356001600160601b038116811461037457600080fd5b809150509250929050565b6000806040838503121561039257600080fd5b8235915060208301356001600160a01b038116811461037457600080fd5b6000602082840312156103c257600080fd5b813567ffffffffffffffff8111156103d957600080fd5b820160c081850312156103eb57600080fd5b9392505050565b634e487b7160e01b600052603260045260246000fd5b60006040820184835260206040602085015281855180845260608601915060208701935060005b8181101561044b5784518352938301939183019160010161042f565b5090979650505050505050565b60006001820161047857634e487b7160e01b600052601160045260246000fd5b5060010190565b60006020828403121561049157600080fd5b813561ffff811681146103eb57600080fd5b6000602082840312156104b557600080fd5b813563ffffffff811681146103eb57600080fd5b6000808335601e198436030181126104e057600080fd5b83018035915067ffffffffffffffff8211156104fb57600080fd5b60200191503681900382131561051057600080fd5b9250929050565b87815286602082015261ffff86166040820152600063ffffffff808716606084015280861660808401525060c060a08301528260c0830152828460e0840137600060e0848401015260e0601f19601f85011683010190509897505050505050505056fea26469706673582212201658a6d262ba8c3533f695db48b072e633ce6bbb1d971e27a5c0fc71ee680ad164736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100885760003560e01c80639b1c385e1161005b5780639b1c385e146100fc578063a21a23e41461010f578063a410347f14610116578063bec4c08c1461012157600080fd5b80633d18651e1461008d5780634cf94d87146100b9578063625e02e3146100cd578063808974ff146100e9575b600080fd5b61009c67016345785d8a000081565b6040516001600160601b0390911681526020015b60405180910390f35b6100cb6100c7366004610343565b5050565b005b6100db660e35fa931a000081565b6040519081526020016100b0565b6100cb6100f736600461037f565b61012f565b6100db61010a3660046103b0565b61027d565b60016100db565b61009c633b9aca0081565b6100cb6100c736600461037f565b60408051600180825281830190925260009160208083019080368337019050509050824260405160200161016d929190918252602082015260400190565b6040516020818303038152906040528051906020012060001c81600081518110610199576101996103f2565b6020908102919091010152604051631fe543e360e01b81526001600160a01b03831690631fe543e3906101d29086908590600401610408565b600060405180830381600087803b1580156101ec57600080fd5b505af1158015610200573d6000803e3d6000fd5b50505050827f7dffc5ae5ee4e2e4df1651cf6ad329a73cebdb728f37ea0187b9b17e036756e482600081518110610239576102396103f2565b602002602001015160006001604051610270939291909283526001600160601b039190911660208301521515604082015260600190565b60405180910390a2505050565b60008054818061028c83610458565b9091555060008181526001602090815260409182902080546001600160a01b03191633908117909155929350840135908435907feb0e3652e0f44f417695e6e90f2f42c99b65cd7169074c5a654b16b9748c3a4e9085906064906102f69060608a01908a0161047f565b61030660808a0160608b016104a3565b61031660a08b0160808c016104a3565b61032360a08c018c6104c9565b6040516103369796959493929190610517565b60405180910390a4919050565b6000806040838503121561035657600080fd5b8235915060208301356001600160601b038116811461037457600080fd5b809150509250929050565b6000806040838503121561039257600080fd5b8235915060208301356001600160a01b038116811461037457600080fd5b6000602082840312156103c257600080fd5b813567ffffffffffffffff8111156103d957600080fd5b820160c081850312156103eb57600080fd5b9392505050565b634e487b7160e01b600052603260045260246000fd5b60006040820184835260206040602085015281855180845260608601915060208701935060005b8181101561044b5784518352938301939183019160010161042f565b5090979650505050505050565b60006001820161047857634e487b7160e01b600052601160045260246000fd5b5060010190565b60006020828403121561049157600080fd5b813561ffff811681146103eb57600080fd5b6000602082840312156104b557600080fd5b813563ffffffff811681146103eb57600080fd5b6000808335601e198436030181126104e057600080fd5b83018035915067ffffffffffffffff8211156104fb57600080fd5b60200191503681900382131561051057600080fd5b9250929050565b87815286602082015261ffff86166040820152600063ffffffff808716606084015280861660808401525060c060a08301528260c0830152828460e0840137600060e0848401015260e0601f19601f85011683010190509897505050505050505056fea26469706673582212201658a6d262ba8c3533f695db48b072e633ce6bbb1d971e27a5c0fc71ee680ad164736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
