@@ -66,5 +66,7 @@ export type { VRFCoordinatorV2_5Mock } from "./contracts/mocks/VRFCoordinatorV2_
 export { VRFCoordinatorV2_5Mock__factory } from "./factories/contracts/mocks/VRFCoordinatorV2_5Mock__factory";
 export type { VRFCoordinatorV2PlusMock } from "./contracts/mocks/VRFCoordinatorV2PlusMock";
 export { VRFCoordinatorV2PlusMock__factory } from "./factories/contracts/mocks/VRFCoordinatorV2PlusMock__factory";
-export type { Raffle } from "./contracts/Raffle";
-export { Raffle__factory } from "./factories/contracts/Raffle__factory";
+export type { ILottoFactory } from "./contracts/Raffle.sol/ILottoFactory";
+export { ILottoFactory__factory } from "./factories/contracts/Raffle.sol/ILottoFactory__factory";
+export type { Raffle } from "./contracts/Raffle.sol/Raffle";
+export { Raffle__factory } from "./factories/contracts/Raffle.sol/Raffle__factory";

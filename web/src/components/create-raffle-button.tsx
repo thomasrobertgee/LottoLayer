@@ -27,7 +27,9 @@ export function CreateRaffleButton() {
             // Updated: 0.0001 ETH, 3 tickets, 1 hour (3600s), Native ETH, 3 Winners
             const ticketPrice = parseEther("0.0001");
             const maxTickets = 3;
-            const duration = 3600;
+            // For small raffles (< 10 tickets), we want "Draw on Sell-Out" only.
+            // Set duration to 0 (Infinity).
+            const duration = maxTickets < 10 ? 0 : 3600;
             const rewardToken = ZeroAddress;
             const numWinners = 3;
 

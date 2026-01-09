@@ -28,13 +28,17 @@ export interface LottoFactoryInterface extends Interface {
     nameOrSignature:
       | "acceptSubscriptionOwnerTransfer"
       | "addSupportedToken"
+      | "checkUpkeep"
       | "createRaffle"
       | "getRaffles"
       | "getSupportedTokens"
       | "i_callbackGasLimit"
       | "i_gasLane"
       | "i_vrfCoordinator"
+      | "isRaffle"
+      | "onRaffleEnded"
       | "owner"
+      | "performUpkeep"
       | "renounceOwnership"
       | "s_raffles"
       | "s_subscriptionId"
@@ -54,6 +58,10 @@ export interface LottoFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "addSupportedToken",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "checkUpkeep",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "createRaffle",
@@ -82,7 +90,25 @@ export interface LottoFactoryInterface extends Interface {
     functionFragment: "i_vrfCoordinator",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "isRaffle",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "onRaffleEnded",
+    values: [
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      AddressLike,
+      BigNumberish
+    ]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "performUpkeep",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -117,6 +143,10 @@ export interface LottoFactoryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "checkUpkeep",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "createRaffle",
     data: BytesLike
   ): Result;
@@ -134,7 +164,16 @@ export interface LottoFactoryInterface extends Interface {
     functionFragment: "i_vrfCoordinator",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isRaffle", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onRaffleEnded",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "performUpkeep",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -238,6 +277,12 @@ export interface LottoFactory extends BaseContract {
     "nonpayable"
   >;
 
+  checkUpkeep: TypedContractMethod<
+    [arg0: BytesLike],
+    [[boolean, string] & { upkeepNeeded: boolean; performData: string }],
+    "view"
+  >;
+
   createRaffle: TypedContractMethod<
     [
       ticketPrice: BigNumberish,
@@ -260,7 +305,27 @@ export interface LottoFactory extends BaseContract {
 
   i_vrfCoordinator: TypedContractMethod<[], [string], "view">;
 
+  isRaffle: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+
+  onRaffleEnded: TypedContractMethod<
+    [
+      ticketPrice: BigNumberish,
+      maxTickets: BigNumberish,
+      duration: BigNumberish,
+      rewardToken: AddressLike,
+      numWinners: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+
   owner: TypedContractMethod<[], [string], "view">;
+
+  performUpkeep: TypedContractMethod<
+    [performData: BytesLike],
+    [void],
+    "nonpayable"
+  >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -297,6 +362,13 @@ export interface LottoFactory extends BaseContract {
     nameOrSignature: "addSupportedToken"
   ): TypedContractMethod<[token: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "checkUpkeep"
+  ): TypedContractMethod<
+    [arg0: BytesLike],
+    [[boolean, string] & { upkeepNeeded: boolean; performData: string }],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "createRaffle"
   ): TypedContractMethod<
     [
@@ -325,8 +397,27 @@ export interface LottoFactory extends BaseContract {
     nameOrSignature: "i_vrfCoordinator"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "isRaffle"
+  ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "onRaffleEnded"
+  ): TypedContractMethod<
+    [
+      ticketPrice: BigNumberish,
+      maxTickets: BigNumberish,
+      duration: BigNumberish,
+      rewardToken: AddressLike,
+      numWinners: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "performUpkeep"
+  ): TypedContractMethod<[performData: BytesLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;

@@ -2,6 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as lottoZapSol from "./LottoZap.sol";
+export * as raffleSol from "./Raffle.sol";
 export * as mocks from "./mocks";
 export { LottoFactory__factory } from "./LottoFactory__factory";
-export { Raffle__factory } from "./Raffle__factory";

@@ -9,6 +9,16 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+interface ILottoFactory {
+    function onRaffleEnded(
+        uint256 ticketPrice,
+        uint256 maxTickets,
+        uint256 duration,
+        address rewardToken,
+        uint32 numWinners
+    ) external;
+}
+
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -38,8 +48,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_maxTickets;
     uint32 private immutable i_numWinners;
-    address private immutable i_houseAddress;
+    address private s_treasuryAddress;
     address private immutable i_rewardToken; // address(0) for Native ETH
+    address private immutable i_factory;
     
     // Storage
     uint256 private s_lastTimeStamp;
@@ -65,7 +76,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         uint32 callbackGasLimit,
         address houseAddress,
         address rewardToken,
-        uint32 numWinners
+        uint32 numWinners,
+        address factoryAddress
     ) VRFConsumerBaseV2Plus(vrfCoordinatorV2) {
         i_entranceFee = entranceFee;
         i_interval = interval;
@@ -73,9 +85,10 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
-        i_houseAddress = houseAddress;
+        s_treasuryAddress = houseAddress;
         i_rewardToken = rewardToken;
         i_numWinners = numWinners;
+        i_factory = factoryAddress;
         
         s_raffleState = RaffleState.OPEN;
         s_lastTimeStamp = block.timestamp;
@@ -154,7 +167,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         returns (bool upkeepNeeded, bytes memory /* performData */)
     {
         bool isOpen = RaffleState.OPEN == s_raffleState;
-        bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
+        bool timePassed = i_interval > 0 && ((block.timestamp - s_lastTimeStamp) > i_interval);
         // maxTickets logic is also handled in buyTicket but Automation acts as backup/failsafe
         bool maxTicketsReached = (s_players.length >= i_maxTickets);
         bool hasPlayers = s_players.length > 0;
@@ -265,7 +278,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
         
         // Pay House
         if (i_rewardToken == address(0)) {
-            (bool successHouse, ) = i_houseAddress.call{value: houseShare}("");
+            (bool successHouse, ) = s_treasuryAddress.call{value: houseShare}("");
             if (!successHouse) revert Raffle__TransferFailed();
             
             for (uint256 i = 0; i < count; i++) {
@@ -273,7 +286,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
                 if (!success) revert Raffle__TransferFailed();
             }
         } else {
-            IERC20(i_rewardToken).safeTransfer(i_houseAddress, houseShare);
+            IERC20(i_rewardToken).safeTransfer(s_treasuryAddress, houseShare);
             for (uint256 i = 0; i < count; i++) {
                  IERC20(i_rewardToken).safeTransfer(winners[i], payouts[i]);
             }
@@ -285,6 +298,21 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatible, ReentrancyGuard 
             s_recentWinner = winners[0];
             emit WinnerPicked(winners[0], payouts[0]);
         }
+
+        
+        // Trigger Factory to create replacement raffle (Automatic Loop)
+        // We only trigger if this is an "endless" or "auto-replacing" system. 
+        // Based on prompt, assume ALWAYS.
+        // We must successfully call factory. If it fails, we don't revert the payout, so wrap in try/catch or ignore failure?
+        // Actually prompt says "Modify... so that... Factory automatically calls createRaffle".
+        // It's safest to require it succeeds if that's the core logic.
+        ILottoFactory(i_factory).onRaffleEnded(
+            i_entranceFee,
+            i_maxTickets,
+            i_interval,
+            i_rewardToken,
+            i_numWinners
+        );
     }
 
     /** Getter Functions */

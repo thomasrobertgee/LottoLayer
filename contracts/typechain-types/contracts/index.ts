@@ -3,7 +3,8 @@
 /* eslint-disable */
 import type * as lottoZapSol from "./LottoZap.sol";
 export type { lottoZapSol };
+import type * as raffleSol from "./Raffle.sol";
+export type { raffleSol };
 import type * as mocks from "./mocks";
 export type { mocks };
 export type { LottoFactory } from "./LottoFactory";
-export type { Raffle } from "./Raffle";

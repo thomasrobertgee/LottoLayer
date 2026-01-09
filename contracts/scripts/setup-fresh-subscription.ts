@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 async function main() {
     const linkAddress = "0xE4aB69C077896252FAFBD49EFD26B5D171A32410";
     const vrfCoordinatorAddress = "0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE";
-    const newFactoryAddress = "0xcE9de0849b949C00E9D907A159aDED693BE9827b";
+    const newFactoryAddress = "0x92a961014719F63E052EF5B44EeF8187A39141B0";
 
     // Amount to fund: 1 LINK
     const fundAmount = ethers.parseEther("1.0");

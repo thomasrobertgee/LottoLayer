@@ -4,9 +4,11 @@ pragma solidity ^0.8.24;
 import {Raffle} from "./Raffle.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract LottoFactory is Ownable {
+contract LottoFactory is Ownable, AutomationCompatible {
     Raffle[] public s_raffles;
+    mapping(address => bool) public isRaffle;
 
     // VRF Configuration Configuration
     address public immutable i_vrfCoordinator;
@@ -61,7 +63,17 @@ contract LottoFactory is Ownable {
         uint256 duration,
         address rewardToken,
         uint32 numWinners
-    ) public onlyOwner {
+    ) public {
+        _createRaffle(ticketPrice, maxTickets, duration, rewardToken, numWinners);
+    }
+    
+    function _createRaffle(
+        uint256 ticketPrice,
+        uint256 maxTickets,
+        uint256 duration,
+        address rewardToken,
+        uint32 numWinners
+    ) internal {
         Raffle raffle = new Raffle(
             ticketPrice,
             duration,
@@ -70,10 +82,12 @@ contract LottoFactory is Ownable {
             i_gasLane,
             s_subscriptionId,
             i_callbackGasLimit,
-            owner(), // House Address is the Factory Owner
+            owner(), // House Address starts as Factory Owner
             rewardToken,
-            numWinners
+            numWinners,
+            address(this) // Factory Address
         );
+
         
         // Transfer ownership of raffle to the factory owner (admin) if needed for administrative tasks
         raffle.transferOwnership(owner()); 
@@ -83,7 +97,42 @@ contract LottoFactory is Ownable {
         IVRFCoordinatorV2Plus(i_vrfCoordinator).addConsumer(s_subscriptionId, address(raffle));
         
         s_raffles.push(raffle);
+        isRaffle[address(raffle)] = true;
         emit RaffleCreated(address(raffle));
+    }
+
+    function onRaffleEnded(
+        uint256 ticketPrice,
+        uint256 maxTickets,
+        uint256 duration,
+        address rewardToken,
+        uint32 numWinners
+    ) external {
+        require(isRaffle[msg.sender], "Only valid raffles can trigger replacement");
+        // Automatically create a fresh replacement
+        _createRaffle(ticketPrice, maxTickets, duration, rewardToken, numWinners);
+    }
+
+    // Chainlink Automation to manage ALL child raffles
+    // This allows registering just the Factory as the Upkeep target
+    function checkUpkeep(bytes calldata /* checkData */) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        for (uint256 i = 0; i < s_raffles.length; i++) {
+            // Check if raffle is active and needs upkeep
+            // We use staticcall to check upkeep without state change
+            try s_raffles[i].checkUpkeep("") returns (bool needed, bytes memory /* data */) {
+                if (needed) {
+                    return (true, abi.encode(i)); // Return index of raffle needing upkeep
+                }
+            } catch {}
+        }
+        return (false, "");
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        uint256 index = abi.decode(performData, (uint256));
+        if (index < s_raffles.length) {
+            s_raffles[index].performUpkeep("");
+        }
     }
 
     function getRaffles() public view returns (Raffle[] memory) {

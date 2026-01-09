@@ -60,6 +60,35 @@ export function RaffleList() {
         }
     };
 
+    // Auto-Refresh on New Raffle
+    useEffect(() => {
+        // We use a simple polling or event listener. 
+        // Since we have a provider even if wallet not connected (via fallback logic if implemented, or just skip),
+        // we should try to listen.
+        let factoryContract: Contract | null = null;
+
+        const setupListener = async () => {
+            // Fallback provider if no wallet
+            const activeProvider = provider || new ethers.JsonRpcProvider(RPC_URL);
+            factoryContract = new Contract(LOTTO_FACTORY_ADDRESS, LottoFactoryABI.abi, activeProvider);
+
+            console.log("Listening for RaffleCreated events on", LOTTO_FACTORY_ADDRESS);
+            factoryContract.on("RaffleCreated", (raffleAddress) => {
+                console.log("New Raffle Detected:", raffleAddress);
+                toast.success("New Raffle Created! Refreshing list...", { id: "new-raffle" });
+                fetchRaffles();
+            });
+        };
+
+        setupListener();
+
+        return () => {
+            if (factoryContract) {
+                factoryContract.removeAllListeners("RaffleCreated");
+            }
+        };
+    }, [provider]);
+
     const fetchRaffles = async () => {
         if (!LOTTO_FACTORY_ADDRESS) return;
         setLoading(true);
@@ -118,14 +147,18 @@ export function RaffleList() {
                     raffle.getLastTimeStamp()
                 ]);
 
-                const endTime = Number(lastTimestamp) + Number(interval);
-                const now = Math.floor(Date.now() / 1000);
-                const secondsLeft = Math.max(0, endTime - now);
-
-                const hours = Math.floor(secondsLeft / 3600);
-                const minutes = Math.floor((secondsLeft % 3600) / 60);
-                const endsInStr = `${hours}h ${minutes}m`;
                 const maxTickets = Number(maxTicketsValue);
+
+                let endsInStr = "Draw on Sell-Out";
+                // If interval is 0, it is untimed (infinite).
+                if (Number(interval) !== 0) {
+                    const endTime = Number(lastTimestamp) + Number(interval);
+                    const now = Math.floor(Date.now() / 1000);
+                    const secondsLeft = Math.max(0, endTime - now);
+                    const hours = Math.floor(secondsLeft / 3600);
+                    const minutes = Math.floor((secondsLeft % 3600) / 60);
+                    endsInStr = `${hours}h ${minutes}m`;
+                }
 
                 const projectedPrize = BigInt(numPlayers) * entranceFee * BigInt(95) / BigInt(100);
 
@@ -474,6 +507,10 @@ function RaffleCard({
     } else if (isTimeUp) {
         badgeText = "Awaiting Draw";
         badgeClass = "bg-orange-500/10 text-orange-500 border-orange-500/20";
+    } else if (raffle.endsIn === "Draw on Sell-Out") {
+        // Special badge for untimed raffles?
+        badgeText = "Untimed";
+        badgeClass = "bg-blue-500/10 text-blue-500 border-blue-500/20";
     }
 
     // Button Logic
@@ -566,7 +603,10 @@ function RaffleCard({
 
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                            <span className="flex items-center"><Timer className="w-3 h-3 mr-1" /> Ends in {raffle.endsIn}</span>
+                            <span className="flex items-center">
+                                <Timer className="w-3 h-3 mr-1" />
+                                {raffle.endsIn === "Draw on Sell-Out" ? "Draw on Sell-Out" : `Ends in ${raffle.endsIn}`}
+                            </span>
                             <span className="flex items-center"><Coins className="w-3 h-3 mr-1" /> {raffle.participants} / {raffle.maxTickets} Sold</span>
                         </div>
                         <Progress value={(raffle.participants / raffle.maxTickets) * 100} className="h-2" />

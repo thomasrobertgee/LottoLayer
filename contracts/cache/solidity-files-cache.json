@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\contracts\\LottoFactory.sol": {
-      "lastModificationDate": 1767750318909,
-      "contentHash": "89e00a819e1a4fadd155e2ea03119496",
+      "lastModificationDate": 1767925408928,
+      "contentHash": "299fdd7062b75dd0e37915cad723f18e",
       "sourceName": "contracts/LottoFactory.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -32,7 +32,8 @@
       "imports": [
         "./Raffle.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
-        "@chainlink/contracts/src/v0.8/dev/interfaces/IVRFCoordinatorV2Plus.sol"
+        "@chainlink/contracts/src/v0.8/dev/interfaces/IVRFCoordinatorV2Plus.sol",
+        "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -42,8 +43,8 @@
       ]
     },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\contracts\\Raffle.sol": {
-      "lastModificationDate": 1767859387047,
-      "contentHash": "851d7ee200a1c8d911be34dfccab80b7",
+      "lastModificationDate": 1767925439344,
+      "contentHash": "a2d9eecfe390530b20d13fd04d580854",
       "sourceName": "contracts/Raffle.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -82,6 +83,7 @@
         "^0.8.24"
       ],
       "artifacts": [
+        "ILottoFactory",
         "Raffle"
       ]
     },
@@ -121,6 +123,45 @@
       ],
       "artifacts": [
         "Ownable"
+      ]
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\automation\\AutomationCompatible.sol": {
+      "lastModificationDate": 1767604058398,
+      "contentHash": "c962c53a75d722542c83859d848edd5b",
+      "sourceName": "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./AutomationBase.sol",
+        "./interfaces/AutomationCompatibleInterface.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "AutomationCompatible"
       ]
     },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\dev\\interfaces\\IVRFCoordinatorV2Plus.sol": {
@@ -273,45 +314,6 @@
         "SafeERC20"
       ]
     },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\automation\\AutomationCompatible.sol": {
-      "lastModificationDate": 1767604058398,
-      "contentHash": "c962c53a75d722542c83859d848edd5b",
-      "sourceName": "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./AutomationBase.sol",
-        "./interfaces/AutomationCompatibleInterface.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "AutomationCompatible"
-      ]
-    },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\dev\\vrf\\VRFConsumerBaseV2Plus.sol": {
       "lastModificationDate": 1767604064053,
       "contentHash": "61b0b16c60645e9bcf73b66824d8d492",
@@ -388,153 +390,6 @@
         "VRFV2PlusClient"
       ]
     },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC1363.sol": {
-      "lastModificationDate": 1767603636351,
-      "contentHash": "a7fd0f05e36b0d0a21c75340c9c639ec",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC1363.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./IERC20.sol",
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC1363"
-      ]
-    },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC165.sol": {
-      "lastModificationDate": 1767603636388,
-      "contentHash": "947853028399b7de34bcc3704ee06e99",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": []
-    },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC20.sol": {
-      "lastModificationDate": 1767603636582,
-      "contentHash": "68620db2da7583d9a4919096ac77f577",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC20.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../token/ERC20/IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": []
-    },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
-      "lastModificationDate": 1767603636485,
-      "contentHash": "7074c93b1ea0a122063f26ddd1db1032",
-      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC165"
-      ]
-    },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\automation\\AutomationBase.sol": {
       "lastModificationDate": 1767604058388,
       "contentHash": "80067f44d8bddd615599f8d73b9726a5",
@@ -605,6 +460,189 @@
       ],
       "artifacts": [
         "AutomationCompatibleInterface"
+      ]
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC1363.sol": {
+      "lastModificationDate": 1767603636351,
+      "contentHash": "a7fd0f05e36b0d0a21c75340c9c639ec",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC1363.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./IERC165.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC1363"
+      ]
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC20.sol": {
+      "lastModificationDate": 1767603636582,
+      "contentHash": "68620db2da7583d9a4919096ac77f577",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../token/ERC20/IERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": []
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC165.sol": {
+      "lastModificationDate": 1767603636388,
+      "contentHash": "947853028399b7de34bcc3704ee06e99",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/introspection/IERC165.sol"
+      ],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": []
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
+      "lastModificationDate": 1767603636485,
+      "contentHash": "7074c93b1ea0a122063f26ddd1db1032",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": [
+        "IERC165"
+      ]
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\dev\\interfaces\\IVRFSubscriptionV2Plus.sol": {
+      "lastModificationDate": 1767604061022,
+      "contentHash": "dc116c2d43a017107c498fe1d39eb118",
+      "sourceName": "@chainlink/contracts/src/v0.8/dev/interfaces/IVRFSubscriptionV2Plus.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IVRFSubscriptionV2Plus"
       ]
     },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\shared\\access\\ConfirmedOwner.sol": {
@@ -679,42 +717,6 @@
       ],
       "artifacts": [
         "IVRFMigratableConsumerV2Plus"
-      ]
-    },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\dev\\interfaces\\IVRFSubscriptionV2Plus.sol": {
-      "lastModificationDate": 1767604061022,
-      "contentHash": "dc116c2d43a017107c498fe1d39eb118",
-      "sourceName": "@chainlink/contracts/src/v0.8/dev/interfaces/IVRFSubscriptionV2Plus.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "IVRFSubscriptionV2Plus"
       ]
     },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\shared\\access\\ConfirmedOwnerWithProposal.sol": {
@@ -868,42 +870,6 @@
         "VRFCoordinatorV2Mock"
       ]
     },
-    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\vrf\\VRFConsumerBaseV2.sol": {
-      "lastModificationDate": 1767604064042,
-      "contentHash": "eb9cc526ef59dfc4d644f56ddca0633a",
-      "sourceName": "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.4"
-      ],
-      "artifacts": [
-        "VRFConsumerBaseV2"
-      ]
-    },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\interfaces\\VRFCoordinatorV2Interface.sol": {
       "lastModificationDate": 1767604064171,
       "contentHash": "4c0aa4a1199644691c779f07e1fec059",
@@ -938,6 +904,42 @@
       ],
       "artifacts": [
         "VRFCoordinatorV2Interface"
+      ]
+    },
+    "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\vrf\\VRFConsumerBaseV2.sol": {
+      "lastModificationDate": 1767604064042,
+      "contentHash": "eb9cc526ef59dfc4d644f56ddca0633a",
+      "sourceName": "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "VRFConsumerBaseV2"
       ]
     },
     "C:\\Users\\thoma\\Desktop\\LottoLayer\\contracts\\node_modules\\@chainlink\\contracts\\src\\v0.8\\shared\\interfaces\\LinkTokenInterface.sol": {

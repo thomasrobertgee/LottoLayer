@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useWeb3 } from "@/lib/web3-provider";
 import { ethers, Contract } from "ethers";
-import { LOTTO_FACTORY_ADDRESS, RPC_URL, CHAIN_ID } from "@/lib/constants";
+import { LOTTO_FACTORY_ADDRESS, RPC_URL, CHAIN_ID, BLOCK_EXPLORER_URL } from "@/lib/constants";
 import LottoFactoryABI from "@/lib/abis/LottoFactory.json";
 import RaffleABI from "@/lib/abis/Raffle.json";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Gift } from "lucide-react";
+import { Trophy, Gift, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface WinnerData {
@@ -17,6 +17,7 @@ interface WinnerData {
     amount: string;
     symbol: string;
     timestamp: number;
+    txHash: string;
 }
 
 export function WinnerDashboard() {
@@ -27,7 +28,9 @@ export function WinnerDashboard() {
     useEffect(() => {
         const fetchWinners = async () => {
             if (!LOTTO_FACTORY_ADDRESS) return;
-            setLoading(true);
+            // Don't set loading on poll, only initial
+            if (winners.length === 0) setLoading(true);
+
             try {
                 // Determine which provider to use for reading
                 const readProvider = (provider && (await provider.getNetwork()).chainId === BigInt(CHAIN_ID))
@@ -62,15 +65,15 @@ export function WinnerDashboard() {
                     }
 
                     // Get Amount from events
-                    // Filter "WinnerPicked" logic
                     const filter = raffle.filters.WinnerPicked();
-                    // Query last 10000 blocks or from beginning? 
-                    // Base Sepolia is fast, maybe we just query a range or 'fromBlock: 0' if manageable.
-                    // For safety/performance, let's try getting the last event.
-                    const events = await raffle.queryFilter(filter, -50000); // Look back 50k blocks approx
+                    // Look back 50k blocks approx
+                    const events = await raffle.queryFilter(filter, -50000);
 
                     if (events.length === 0) return null;
 
+                    // We only take the last one here as per logic that each raffle has 1 winner.
+                    // If we wanted all events from a single contract, we'd map events.
+                    // But assume 1 raffle = 1 draw.
                     const lastEvent = events[events.length - 1] as any;
                     const amount = lastEvent.args ? lastEvent.args[1] : BigInt(0);
 
@@ -82,7 +85,8 @@ export function WinnerDashboard() {
                         winner: recentWinner,
                         amount: ethers.formatUnits(amount, decimals),
                         symbol: symbol,
-                        timestamp: block ? block.timestamp : Date.now() / 1000
+                        timestamp: block ? block.timestamp : Date.now() / 1000,
+                        txHash: lastEvent.transactionHash
                     };
                 });
 
@@ -102,6 +106,9 @@ export function WinnerDashboard() {
         };
 
         fetchWinners();
+        const interval = setInterval(fetchWinners, 10000); // Poll every 10s for live sync
+
+        return () => clearInterval(interval);
     }, [provider]);
 
     if (loading && winners.length === 0) return <div className="text-center py-8 opacity-50">Loading Winners...</div>;
@@ -125,7 +132,7 @@ export function WinnerDashboard() {
             <h2 className="text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent flex items-center justify-center gap-2">
                 <Trophy className="text-yellow-500 w-6 h-6" /> Recent Winners
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2">
                 {winners.map((win, idx) => (
                     <WinnerCard key={`${win.raffleAddress}-${idx}`} data={win} index={idx} />
                 ))}
@@ -192,9 +199,18 @@ function WinnerCard({ data, index }: { data: WinnerData, index: number }) {
                                 </p>
                             </div>
 
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground mb-2">
                                 Won {getTimeAgo(data.timestamp)}
                             </p>
+
+                            <a
+                                href={`${BLOCK_EXPLORER_URL}/tx/${data.txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-[10px] text-yellow-500 hover:text-yellow-400 hover:underline"
+                            >
+                                View Ticket <ExternalLink className="w-3 h-3 ml-1" />
+                            </a>
                         </motion.div>
                     )}
                 </AnimatePresence>

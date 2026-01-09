@@ -130,6 +130,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VRFCoordinatorV2PlusMock__factory>;
     getContractFactory(
+      name: "ILottoFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILottoFactory__factory>;
+    getContractFactory(
       name: "Raffle",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Raffle__factory>;
@@ -280,6 +284,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.VRFCoordinatorV2PlusMock>;
     getContractAt(
+      name: "ILottoFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILottoFactory>;
+    getContractAt(
       name: "Raffle",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -402,6 +411,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VRFCoordinatorV2PlusMock>;
     deployContract(
+      name: "ILottoFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ILottoFactory>;
+    deployContract(
       name: "Raffle",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Raffle>;
@@ -551,6 +564,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VRFCoordinatorV2PlusMock>;
+    deployContract(
+      name: "ILottoFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ILottoFactory>;
     deployContract(
       name: "Raffle",
       args: any[],
