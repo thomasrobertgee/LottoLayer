@@ -143,86 +143,87 @@ export function WinnerHistoryTable() {
             </div>
 
             <div className="rounded-md border bg-card/50 backdrop-blur-sm overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b border-primary/10">
-                            <TableHead className="w-[180px]">Date</TableHead>
-                            <TableHead>Raffle ID</TableHead>
-                            <TableHead>Winner</TableHead>
-                            <TableHead className="text-right">Prize (ETH)</TableHead>
-                            <TableHead className="text-center">Tickets</TableHead>
-                            <TableHead className="text-center">Status</TableHead>
-                            <TableHead className="text-right">Proof</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {winners.map((row, idx) => (
-                            <TableRow key={`${row.raffleAddress}-${idx}`} className="hover:bg-muted/50 transition-colors border-b border-primary/5">
-                                <TableCell className="font-mono text-xs text-muted-foreground">
-                                    {new Date(row.timestamp * 1000).toLocaleString('en-GB', {
-                                        day: '2-digit', month: '2-digit', year: '2-digit',
-                                        hour: '2-digit', minute: '2-digit'
-                                    })}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-xs text-blue-400">
-                                            {row.raffleAddress.slice(0, 6)}...{row.raffleAddress.slice(-4)}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-4 w-4 text-muted-foreground/50 hover:text-white"
-                                            onClick={() => copyToClipboard(row.raffleAddress)}
-                                        >
-                                            <Copy className="w-3 h-3" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50" />
-                                        <span className="font-mono text-xs font-medium">
-                                            {row.winner.slice(0, 6)}...{row.winner.slice(-4)}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right font-bold text-yellow-500">
-                                    {parseFloat(row.amount).toFixed(4)}
-                                </TableCell>
-                                <TableCell className="text-center text-xs text-muted-foreground">
-                                    {row.ticketsSold}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20 text-[10px] uppercase font-bold tracking-wider">
-                                        Paid
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <a
-                                                    href={`${BLOCK_EXPLORER_URL}/tx/${row.txHash}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-white/10 transition-colors text-blue-400"
-                                                >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </a>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>View Transaction</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </TableCell>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent border-b border-primary/10">
+                                <TableHead className="w-[150px] whitespace-nowrap">Date</TableHead>
+                                <TableHead className="whitespace-nowrap">Raffle ID</TableHead>
+                                <TableHead className="whitespace-nowrap">Winner</TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Prize (ETH)</TableHead>
+                                <TableHead className="text-center whitespace-nowrap">Tickets</TableHead>
+                                <TableHead className="text-center whitespace-nowrap">Status</TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Proof</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {winners.map((row, idx) => (
+                                <TableRow key={`${row.raffleAddress}-${idx}`} className="hover:bg-muted/50 transition-colors border-b border-primary/5">
+                                    <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                        {new Date(row.timestamp * 1000).toLocaleString('en-GB', {
+                                            day: '2-digit', month: '2-digit', year: '2-digit',
+                                            hour: '2-digit', minute: '2-digit'
+                                        })}
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-xs text-blue-400">
+                                                {row.raffleAddress.slice(0, 6)}...{row.raffleAddress.slice(-4)}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-4 w-4 text-muted-foreground/50 hover:text-white"
+                                                onClick={() => copyToClipboard(row.raffleAddress)}
+                                            >
+                                                <Copy className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50" />
+                                            <span className="font-mono text-xs font-medium">
+                                                {row.winner.slice(0, 6)}...{row.winner.slice(-4)}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-yellow-500 whitespace-nowrap">
+                                        {parseFloat(row.amount).toFixed(4)}
+                                    </TableCell>
+                                    <TableCell className="text-center text-xs text-muted-foreground whitespace-nowrap">
+                                        {row.ticketsSold}
+                                    </TableCell>
+                                    <TableCell className="text-center whitespace-nowrap">
+                                        <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20 text-[10px] uppercase font-bold tracking-wider">
+                                            Paid
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right whitespace-nowrap">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <a
+                                                        href={`${BLOCK_EXPLORER_URL}/tx/${row.txHash}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-white/10 transition-colors text-blue-400"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </a>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>View Transaction</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );
 }
-

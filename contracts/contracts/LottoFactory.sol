@@ -132,23 +132,28 @@ contract LottoFactory is Ownable, AutomationCompatible {
 
     // Chainlink Automation to manage ALL child raffles
     // This allows registering just the Factory as the Upkeep target
+    // Chainlink Automation to manage ONLY the LATEST child raffle
+    // Manager Pattern: Factory is the single Upkeep Registration.
     function checkUpkeep(bytes calldata /* checkData */) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        for (uint256 i = 0; i < s_raffles.length; i++) {
-            // Check if raffle is active and needs upkeep
-            // We use staticcall to check upkeep without state change
-            try s_raffles[i].checkUpkeep("") returns (bool needed, bytes memory /* data */) {
-                if (needed) {
-                    return (true, abi.encode(i)); // Return index of raffle needing upkeep
-                }
-            } catch {}
-        }
+        if (s_raffles.length == 0) return (false, "");
+        
+        // Only check the latest raffle
+        uint256 index = s_raffles.length - 1;
+        Raffle latestRaffle = s_raffles[index];
+        
+        try latestRaffle.checkUpkeep("") returns (bool needed, bytes memory /* data */) {
+            if (needed) {
+                return (true, abi.encode(index)); 
+            }
+        } catch {}
+        
         return (false, "");
     }
 
     function performUpkeep(bytes calldata performData) external override {
         uint256 index = abi.decode(performData, (uint256));
         if (index < s_raffles.length) {
-            s_raffles[index].performUpkeep("");
+             s_raffles[index].performUpkeep("");
         }
     }
 
